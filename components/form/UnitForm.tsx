@@ -4,13 +4,13 @@ import React, { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { getBaccaratData, updateBaccaratRow, createBaccaratRow, getFranchiseUnitCount } from "@/helper/baccarat"
+import { getBaccaratData, updateBaccaratRow, createBaccaratRow, getFranchiseUnitCount } from "@/helper/bot"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { getFranchises } from "@/helper/franchise"
 import { Franchise } from "@/types/franchise"
-import { getAccounts, updateAccount } from "@/helper/accounts"
+import { getUserAccounts as getAccounts, updateUserAccount as updateAccount } from "@/helper/user_account"
 import { Account } from "@/types/accounts"
 
 
@@ -48,18 +48,18 @@ export function UnitForm({ initialData, onSuccess }: UnitFormProps) {
 
                 // If editing, find the account linked to this unit
                 if (isEditing && initialData) {
-                    const currentAccount = accountData?.find(acc => 
-                        (initialData.id && acc.unit_id === initialData.id) || 
+                    const currentAccount = accountData?.find(acc =>
+                        (initialData.id && acc.unit_id === initialData.id) ||
                         (initialData.user_id && acc.id === initialData.user_id)
                     )
                     if (currentAccount) {
                         setSelectedAccount(currentAccount)
                         setOriginalAccountId(currentAccount.id)
                     }
-                    
+
                     // Also find the franchise for this unit
                     if (initialData.franchise_name || initialData.franchise_code) {
-                        const currentFranchise = franchiseData?.find(f => 
+                        const currentFranchise = franchiseData?.find(f =>
                             f.franchise_name === initialData.franchise_name ||
                             f.franchise_code === initialData.franchise_code
                         )
@@ -127,11 +127,11 @@ export function UnitForm({ initialData, onSuccess }: UnitFormProps) {
                     franchise: selectedFranchise?.franchise_name || null,
                     franchise_id: selectedFranchise?.db_id ? Number(selectedFranchise.db_id) : null,
                 })
-                
+
                 if (!createdRows || createdRows.length === 0) {
                     throw new Error("Failed to create unit: No data returned from database")
                 }
-                
+
                 unitId = createdRows[0].id;
 
                 // 3. Link account if selected
@@ -171,14 +171,14 @@ export function UnitForm({ initialData, onSuccess }: UnitFormProps) {
                                 }
                             }
                         }}
-                        options={franchises.map(f => ({ 
-                            value: f.id, 
+                        options={franchises.map(f => ({
+                            value: f.id,
                             label: f.franchise_name || "Unknown"
                         }))}
                         placeholder="Select franchise"
                     />
                 </div>
-                
+
                 <div className="space-y-2">
                     <Label htmlFor="pc_name">PC Name / Unit Name</Label>
                     <Input
@@ -197,9 +197,9 @@ export function UnitForm({ initialData, onSuccess }: UnitFormProps) {
                         id="account"
                         value={selectedAccount?.id || ""}
                         onChange={(id) => setSelectedAccount(accounts.find(a => a.id === id) || null)}
-                        options={accounts.map(a => ({ 
-                            value: a.id, 
-                            label: `${a.first_name || ""} ${a.last_name || ""} (${a.email})`.trim() || a.email 
+                        options={accounts.map(a => ({
+                            value: a.id,
+                            label: `${a.first_name || ""} ${a.last_name || ""} (${a.email})`.trim() || a.email
                         }))}
                         placeholder="Select user account"
                     />

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Save, Loader2, ChevronDown } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { createAccount, updateAccount } from "@/helper/accounts"
+import { createUserAccount as createAccount, updateUserAccount as updateAccount } from "@/helper/user_account"
 import { Franchise } from "@/types/franchise"
 
 const userAccountSchema = z.object({

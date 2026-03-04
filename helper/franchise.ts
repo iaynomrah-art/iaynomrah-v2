@@ -1,26 +1,31 @@
 "use server";
 
-import { createClient2 as createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
+
+export type Franchise = {
+  id: string;
+  created_at?: string;
+  name: string | null;
+  code: string | null;
+  description: string | null;
+  investor_name: string | null;
+};
+
+/* ── READ ── */
 
 export async function getFranchises() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("franchise")
-    .select("id, franchise_name, franchise_code, investor_name, description")
-    .order("franchise_name", { ascending: true });
+    .select("*")
+    .order("name", { ascending: true });
 
   if (error) {
     console.error("Error fetching franchises:", error);
     return [];
   }
-  
-  // Map franchise_name to id to maintain compatibility with existing components
-  // Keep the real DB id as db_id for foreign key references
-  return (data || []).map(f => ({
-      ...f,
-      db_id: f.id,
-      id: f.franchise_name
-  }));
+  return data;
 }
 
 export async function getFranchiseById(id: string) {
@@ -28,17 +33,21 @@ export async function getFranchiseById(id: string) {
   const { data, error } = await supabase
     .from("franchise")
     .select("*")
-    .eq("franchise_name", id)
+    .eq("id", id)
     .single();
 
   if (error) {
     console.error("Error fetching franchise:", error);
     return null;
   }
-  return { ...data, id: data.franchise_name };
+  return data;
 }
 
-export async function createFranchise(formData: any) {
+/* ── CREATE ── */
+
+export async function createFranchise(
+  formData: Omit<Franchise, "id" | "created_at">,
+) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("franchise")
@@ -48,29 +57,39 @@ export async function createFranchise(formData: any) {
   if (error) {
     throw new Error(error.message);
   }
+  revalidatePath("/dashboard/franchise");
   return data;
 }
 
-export async function updateFranchise(id: string, formData: any) {
+/* ── UPDATE ── */
+
+export async function updateFranchise(
+  id: string,
+  formData: Partial<Omit<Franchise, "id" | "created_at">>,
+) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("franchise")
     .update(formData)
-    .eq("franchise_name", id)
+    .eq("id", id)
     .select();
 
   if (error) {
     throw new Error(error.message);
   }
+  revalidatePath("/dashboard/franchise");
   return data;
 }
 
+/* ── DELETE ── */
+
 export async function deleteFranchise(id: string) {
   const supabase = await createClient();
-  const { error } = await supabase.from("franchise").delete().eq("franchise_name", id);
+  const { error } = await supabase.from("franchise").delete().eq("id", id);
 
   if (error) {
     throw new Error(error.message);
   }
+  revalidatePath("/dashboard/franchise");
   return true;
 }

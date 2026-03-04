@@ -14,7 +14,7 @@ import { Pencil, Trash2, Copy, Check, ArrowUp, ArrowDown, ArrowUpDown } from "lu
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import { DeleteCredentialModal } from "@/components/modal/Delete/DeleteCredential"
-import { deleteCredential } from "@/helper/credentials"
+import { deleteCredential } from "@/helper/credential"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { EditCredentialDialog } from "@/components/modal/Edit/EditCredentialDialog"
@@ -151,9 +151,9 @@ export const CredentialsTable = ({ data, funders = [] }: CredentialsTableProps) 
             <Table>
                 <TableHeader className="bg-[#0a0a0a]">
                     <TableRow className="border-gray-800 hover:bg-transparent">
-                                                <SortableHeader label="ACCOUNT NAME" sortKey="account_name" />
+                        <SortableHeader label="ACCOUNT NAME" sortKey="account_name" />
 
-                                                <SortableHeader label="USERNAME" sortKey="username" />
+                        <SortableHeader label="USERNAME" sortKey="username" />
 
                         <TableHead className="text-gray-400 font-bold uppercase text-[10px] tracking-wider text-center px-4 pb-4">PASSWORD</TableHead>
                         <TableHead className="text-gray-400 font-bold uppercase text-[10px] tracking-wider text-center px-4 pb-4">Actions</TableHead>

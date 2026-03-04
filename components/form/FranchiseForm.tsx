@@ -123,10 +123,10 @@ export const FranchiseForm = ({ initialData }: FranchiseFormProps) => {
                     <Label htmlFor="franchise_code" className="text-white">
                         Franchise Code <span className="text-red-400">*</span>
                     </Label>
-                    <Button 
-                        type="button" 
-                        variant="link" 
-                        size="sm" 
+                    <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
                         onClick={generateCode}
                         className="text-blue-400 hover:text-blue-300 h-auto p-0"
                     >

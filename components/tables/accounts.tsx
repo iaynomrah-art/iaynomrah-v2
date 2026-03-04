@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Trash2, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react"
 import { DeleteAccountModal } from "@/components/modal/Delete/DeleteAccount"
-import { deleteAccount } from "@/helper/accounts"
+import { deleteUserAccount as deleteAccount } from "@/helper/user_account"
 import { toast } from "sonner"
 import Link from "next/link"
 import { EditUserAccountDialog } from "@/components/modal/Edit/EditUserAccountDialog"

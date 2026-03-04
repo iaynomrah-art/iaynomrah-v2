@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Save, Loader2 } from "lucide-react"
-import { createPlatformWebsite, updatePlatformWebsite, PlatformWebsiteRecord } from "@/helper/platform_websites"
+import { createPlatformWebsite, updatePlatformWebsite, PlatformWebsite as PlatformWebsiteRecord } from "@/helper/platform_website"
 import { toast } from "sonner"
 import Swal from "sweetalert2"
 

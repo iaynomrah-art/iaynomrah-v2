@@ -26,7 +26,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { updateBaccaratRow } from "@/helper/baccarat"
+import { updateBaccaratRow } from "@/helper/bot"
 
 export type BaccaratRow = {
     id: number | string
@@ -790,8 +790,8 @@ export const PlayBaccaratTable = ({
                                 {row.units ?? ""}
                             </TableCell>
                             <TableCell className="text-left text-gray-200 text-xs px-4">
-                                {row.assigned_user 
-                                    ? `${row.assigned_user.first_name || ""} ${row.assigned_user.middle_name || ""} ${row.assigned_user.last_name || ""}`.trim() 
+                                {row.assigned_user
+                                    ? `${row.assigned_user.first_name || ""} ${row.assigned_user.middle_name || ""} ${row.assigned_user.last_name || ""}`.trim()
                                     : "-"}
                             </TableCell>
                             <TableCell className="text-right text-gray-200 text-xs px-4">
@@ -822,9 +822,9 @@ export const PlayBaccaratTable = ({
                                     <SelectContent className="bg-[#1a1a1a] border-gray-800" position="popper" side="bottom" sideOffset={4}>
                                         <SelectItem value="-" className="text-gray-200 hover:bg-gray-800">None</SelectItem>
                                         {platforms.map(p => (
-                                            <SelectItem 
-                                                key={p.platform_code || p.id} 
-                                                value={p.platform_code || "-"} 
+                                            <SelectItem
+                                                key={p.platform_code || p.id}
+                                                value={p.platform_code || "-"}
                                                 className="hover:bg-gray-800"
                                             >
                                                 {p.platform_code || "Unknown"}

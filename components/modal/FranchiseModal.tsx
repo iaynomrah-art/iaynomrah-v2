@@ -86,8 +86,8 @@ export const FranchiseModal = ({ isOpen, onClose }: FranchiseModalProps) => {
                                 Loading...
                             </div>
                         ) : (
-                            <FranchiseList 
-                                franchises={filteredFranchises} 
+                            <FranchiseList
+                                franchises={filteredFranchises}
                                 onEdit={(f) => setEditingFranchise(f)}
                             />
                         )}

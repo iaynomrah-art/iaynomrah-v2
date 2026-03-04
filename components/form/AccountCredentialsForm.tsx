@@ -10,9 +10,9 @@ import { Button } from "@/components/ui/button"
 import { Save, Loader2, Eye, EyeOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { createCredential, updateCredential } from "@/helper/credentials"
-import { getPlatformWebsites, PlatformWebsiteRecord } from "@/helper/platform_websites"
-import { getAccounts } from "@/helper/accounts"
+import { createCredential, updateCredential } from "@/helper/credential"
+import { getPlatformWebsites, PlatformWebsite as PlatformWebsiteRecord } from "@/helper/platform_website"
+import { getUserAccounts as getAccounts } from "@/helper/user_account"
 
 const credentialSchema = z.object({
     account_name: z.string().min(1, "Account Name is required"),

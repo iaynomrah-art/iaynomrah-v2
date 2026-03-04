@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient, createClient2 } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { Suspense } from "react";
 import { Users, Building2, Server, Activity, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ async function UserCheck() {
     redirect("/auth/login");
   }
 
-  const supabase2 = await createClient2();
+  const supabase2 = await createClient();
 
   const [
     { count: totalPC },

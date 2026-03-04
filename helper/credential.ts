@@ -1,22 +1,28 @@
 "use server";
 
-import { createClient2 as createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+
+export type Credential = {
+  id: string;
+  created_at?: string;
+  platform: string | null;
+  username: string | null;
+  password: string | null;
+  user_id: string | null;
+};
+
+/* ── READ ── */
 
 export async function getCredentials() {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("credentials")
-    .select("*")
+    .from("credential")
+    .select("*, user_account(*)")
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching credentials:", {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-    });
+    console.error("Error fetching credentials:", error);
     return [];
   }
   return data;
@@ -25,8 +31,8 @@ export async function getCredentials() {
 export async function getCredentialById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("credentials")
-    .select("*")
+    .from("credential")
+    .select("*, user_account(*)")
     .eq("id", id)
     .single();
 
@@ -37,10 +43,14 @@ export async function getCredentialById(id: string) {
   return data;
 }
 
-export async function createCredential(formData: any) {
+/* ── CREATE ── */
+
+export async function createCredential(
+  formData: Omit<Credential, "id" | "created_at">,
+) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("credentials")
+    .from("credential")
     .insert([formData])
     .select();
 
@@ -51,10 +61,15 @@ export async function createCredential(formData: any) {
   return data;
 }
 
-export async function updateCredential(id: string, formData: any) {
+/* ── UPDATE ── */
+
+export async function updateCredential(
+  id: string,
+  formData: Partial<Omit<Credential, "id" | "created_at">>,
+) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("credentials")
+    .from("credential")
     .update(formData)
     .eq("id", id)
     .select();
@@ -66,32 +81,15 @@ export async function updateCredential(id: string, formData: any) {
   return data;
 }
 
+/* ── DELETE ── */
+
 export async function deleteCredential(id: string) {
   const supabase = await createClient();
-  const { error } = await supabase.from("credentials").delete().eq("id", id);
+  const { error } = await supabase.from("credential").delete().eq("id", id);
 
   if (error) {
     throw new Error(error.message);
   }
   revalidatePath("/dashboard/trading-accounts/credentials");
   return true;
-}
-
-export async function credentialsTable() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("credentials")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching credentials table data:", {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-    });
-    return [];
-  }
-  return data;
 }

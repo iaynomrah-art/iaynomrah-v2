@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react"
 import { DeletePlatformModal } from "@/components/modal/Delete/DeletePlatform"
-import { deletePlatformWebsite } from "@/helper/platform_websites"
+import { deletePlatformWebsite } from "@/helper/platform_website"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 

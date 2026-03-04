@@ -146,7 +146,7 @@ export const PlayHistoryTable = ({
 
             return String(aValue).localeCompare(String(bValue)) * direction
         })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data, sortConfig, isDaily])
 
     return (

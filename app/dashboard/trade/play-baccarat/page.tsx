@@ -18,10 +18,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { PlayBaccaratTable, type BaccaratRow } from "@/components/tables/play_baccarat"
-import { createClient2 } from "@/lib/supabase/client"
-import { getBaccaratData, updateBaccaratRow } from "@/helper/baccarat"
-import { getFunders } from "@/helper/funders"
-import { getPlatformWebsites } from "@/helper/platform_websites"
+import { createClient } from "@/lib/supabase/client"
+import { getBaccaratData, updateBaccaratRow } from "@/helper/bot"
+import { getPlatformWebsites } from "@/helper/platform_website"
 
 const PlayBacarratPage = () => {
     const [selectedFilter, setSelectedFilter] = useState("All")
@@ -31,12 +30,12 @@ const PlayBacarratPage = () => {
     const [error, setError] = useState<string | null>(null)
 
     // IMPORTANT: Initialize Supabase client ONCE to prevent connection drops or duplicates
-    const [supabase] = useState(() => createClient2())
+    const [supabase] = useState(() => createClient())
 
     const [funders, setFunders] = useState<any[]>([])
     const [selectedFunder, setSelectedFunder] = useState("all")
     const [statusFilter, setStatusFilter] = useState("all")
-    const [platforms, setPlatforms] = useState<{id: string | number; platform_code: string | null; text_color?: string | null; bg_color?: string | null}[]>([])
+    const [platforms, setPlatforms] = useState<{ id: string | number; platform_code: string | null; text_color?: string | null; bg_color?: string | null }[]>([])
 
     const fetchDropdownData = useCallback(async () => {
         try {
@@ -53,13 +52,11 @@ const PlayBacarratPage = () => {
     const fetchData = useCallback(async (showLoading = false) => {
         try {
             if (showLoading) setLoading(true)
-            const [baccaratData, fundersData, platformData] = await Promise.all([
+            const [baccaratData, platformData] = await Promise.all([
                 getBaccaratData(),
-                getFunders(),
                 getPlatformWebsites()
             ])
             setRows(baccaratData as BaccaratRow[])
-            setFunders(fundersData)
             setPlatforms(platformData.map(p => ({
                 id: p.id,
                 platform_code: p.platform_code,

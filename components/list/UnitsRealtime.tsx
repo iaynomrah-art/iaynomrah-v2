@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { UnitCard } from "../card/CardUnit";
-import { createClient, createClient2 } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { getFranchiseStyles } from "@/lib/utils";
 import { UnitStatus } from "@/types/units";
 import { ArchiveUnitModal } from "@/components/modal/ArchieveUniit";
 import { toast } from "sonner";
 
-import { getBaccaratData, updateBaccaratRow } from "@/helper/baccarat";
-import { getUnitsWithCounts, archiveUnit } from "@/helper/units";
+import { getBaccaratData, updateBaccaratRow } from "@/helper/bot";
+import { getUnits, deleteUnit } from "@/helper/units";
 import { getFranchises } from "@/helper/franchise";
 import { Franchise } from "@/types/franchise";
 import { UnitModal } from "../modal/Update/UnitModal";
@@ -41,7 +41,7 @@ export const UnitsRealtime = React.forwardRef(({ initialData, searchQuery: exter
 
     const fetchLatestData = async () => {
         const [latestUnits, latestFranchises] = await Promise.all([
-            getUnitsWithCounts(),
+            getUnits(),
             getFranchises()
         ]);
         setUnits(latestUnits);
@@ -82,8 +82,7 @@ export const UnitsRealtime = React.forwardRef(({ initialData, searchQuery: exter
             })
             .subscribe();
 
-        const supabase2 = createClient2();
-        const botChannel = supabase2
+        const botChannel = supabase
             .channel('bot_monitoring_realtime')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'bot_monitoring' }, () => {
                 fetchLatestData();
@@ -121,7 +120,7 @@ export const UnitsRealtime = React.forwardRef(({ initialData, searchQuery: exter
 
         setIsArchiving(true);
         try {
-            await archiveUnit(selectedUnitForArchive.id);
+            await deleteUnit(selectedUnitForArchive.id);
             toast.success(`${selectedUnitForArchive.name} archived successfully`);
             setIsArchiveModalOpen(false);
             setSelectedUnitForArchive(null);
@@ -177,12 +176,12 @@ export const UnitsRealtime = React.forwardRef(({ initialData, searchQuery: exter
                             status={unit.status || "Disabled"}
                             serial={unit.unit_id?.split("-")[0]?.toUpperCase() || "N/A"}
                             owner={
-                                unit.assigned_user 
+                                unit.assigned_user
                                     ? `${unit.assigned_user.first_name || ""} ${unit.assigned_user.middle_name || ""} ${unit.assigned_user.last_name || ""}`.replace(/\s+/g, " ").trim()
                                     : (unit.franchise?.franchise_name || "System")
                             }
                             assignedUserName={
-                                unit.assigned_user 
+                                unit.assigned_user
                                     ? `${unit.assigned_user.first_name || ""} ${unit.assigned_user.middle_name || ""} ${unit.assigned_user.last_name || ""}`.replace(/\s+/g, " ").trim()
                                     : undefined
                             }

@@ -43,7 +43,7 @@ export const UpdateFranchiseModal = ({ isOpen, onClose, onSuccess, franchise }: 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!franchise) return;
-        
+
         // Use either id or franchise_name as the identifier
         const identifier = (franchise as any).id || franchise.franchise_name;
         if (!identifier) {

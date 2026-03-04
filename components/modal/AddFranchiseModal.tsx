@@ -28,13 +28,13 @@ export const AddFranchiseModal = ({ isOpen, onClose, onSuccess }: AddFranchiseMo
         const { name, value } = e.target;
         setFormData((prev) => {
             const newData = { ...prev, [name]: value };
-            
+
             // Auto-generate code if name is being changed
             if (name === "franchise_name") {
                 const cleanName = value.replace(/\s+/g, '');
                 newData.franchise_code = cleanName.substring(0, 3).toUpperCase();
             }
-            
+
             return newData;
         });
     };

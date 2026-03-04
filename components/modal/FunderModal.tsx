@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { BettingPlatformForm } from "@/components/form/BettingPlatformForm"
-import { PlatformWebsiteRecord } from "@/helper/platform_websites"
+import { PlatformWebsite as PlatformWebsiteRecord } from "@/helper/platform_website"
 
 interface FunderModalProps {
     isOpen: boolean
