@@ -1,0 +1,169 @@
+"use client";
+
+import React, { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { createFranchise } from "@/helper/franchise";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+
+interface AddFranchiseModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSuccess: () => void;
+}
+
+export const AddFranchiseModal = ({ isOpen, onClose, onSuccess }: AddFranchiseModalProps) => {
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        franchise_name: "",
+        franchise_code: "",
+        investor_name: "",
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData((prev) => {
+            const newData = { ...prev, [name]: value };
+            
+            // Auto-generate code if name is being changed
+            if (name === "franchise_name") {
+                const cleanName = value.replace(/\s+/g, '');
+                newData.franchise_code = cleanName.substring(0, 3).toUpperCase();
+            }
+            
+            return newData;
+        });
+    };
+
+    const generateCode = () => {
+        if (formData.franchise_name) {
+            const cleanName = formData.franchise_name.replace(/\s+/g, '');
+            const code = cleanName.substring(0, 3).toUpperCase();
+            setFormData(prev => ({ ...prev, franchise_code: code }));
+        }
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.franchise_name || !formData.franchise_code || !formData.investor_name) {
+            toast.error("Please fill in all required fields");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await createFranchise(formData);
+            toast.success("Franchise created successfully");
+            setFormData({
+                franchise_name: "",
+                franchise_code: "",
+                investor_name: "",
+            });
+            onSuccess();
+            onClose();
+        } catch (error: any) {
+            console.error("Error creating franchise:", error);
+            toast.error(error.message || "Failed to create franchise");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="bg-[#0A0A0A] border-gray-800 text-white sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Add New Franchise</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="franchise_name">Franchise Name</Label>
+                        <Input
+                            id="franchise_name"
+                            name="franchise_name"
+                            placeholder="e.g. Alpha Ventures"
+                            value={formData.franchise_name}
+                            onChange={handleChange}
+                            className="bg-[#111111] border-gray-800 focus:border-blue-600"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                            <Label htmlFor="franchise_code">Franchise Code</Label>
+                            <button
+                                type="button"
+                                onClick={generateCode}
+                                className="text-xs text-blue-500 hover:text-blue-400"
+                            >
+                                Generate
+                            </button>
+                        </div>
+                        <Input
+                            id="franchise_code"
+                            name="franchise_code"
+                            placeholder="e.g. ALP-101"
+                            value={formData.franchise_code}
+                            onChange={handleChange}
+                            className="bg-[#111111] border-gray-800 focus:border-blue-600 uppercase"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="investor_name">Investor Name</Label>
+                        <Input
+                            id="investor_name"
+                            name="investor_name"
+                            placeholder="e.g. John Doe"
+                            value={formData.investor_name}
+                            onChange={handleChange}
+                            className="bg-[#111111] border-gray-800 focus:border-blue-600"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="description">Description (Optional)</Label>
+                        <Textarea
+                            id="description"
+                            name="description"
+                            placeholder="e.g. Key regional partner"
+                            value={(formData as any).description || ""}
+                            onChange={handleChange}
+                            className="bg-[#111111] border-gray-800 focus:border-blue-600 min-h-[80px]"
+                        />
+                    </div>
+
+                    <DialogFooter className="pt-4">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={onClose}
+                            disabled={loading}
+                            className="hover:bg-gray-800"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            className="bg-blue-600 hover:bg-blue-500 text-white"
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Creating...
+                                </>
+                            ) : (
+                                "Create Franchise"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+};
