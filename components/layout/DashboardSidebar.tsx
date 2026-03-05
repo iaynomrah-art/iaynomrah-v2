@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -8,14 +7,12 @@ import {
   Server,
   Package,
   CreditCard,
-  Users,
   ChevronRight,
 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
@@ -53,24 +50,24 @@ const menuItems: MenuItem[] = [
     title: "Baccarat",
     icon: <Server className="w-4 h-4" />,
     children: [
-      { title: "Play Baccarat", href: "/dashboard/trade/play-baccarat" },
-      { title: "Play History", href: "/dashboard/trade/history" },
+      { title: "Play Baccarat", href: "/dashboard/betting/play-baccarat" },
+      { title: "Play History", href: "/dashboard/betting/history" },
     ],
   },
   {
     title: "Server Units",
     icon: <Package className="w-4 h-4" />,
     children: [
-      { title: "Server Units", href: "/dashboard/trading-units/my-units" },
+      { title: "Server Units", href: "/dashboard/units" },
     ],
   },
   {
     title: "Baccarat Accounts",
     icon: <CreditCard className="w-4 h-4" />,
     children: [
-      { title: "Account Credentials", href: "/dashboard/trading-accounts/credentials" },
-      { title: "User Accounts", href: "/dashboard/trading-accounts/user-accounts" },
-      { title: "Betting Platforms", href: "/dashboard/funders" },
+      { title: "Account Credentials", href: "/dashboard/betting-accounts/credentials" },
+      { title: "User Accounts", href: "/dashboard/betting-accounts/accounts" },
+      { title: "Betting Platforms", href: "/dashboard/betting-accounts/platforms" },
     ],
   },
 ];

@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { getCredentials } from '@/helper/credentials'
+import { getCredentials } from '@/helper/credential'
 import { SearchBarHeader } from '@/components/ui/search-bar-header'
 import { CredentialsTable, CredentialsTableSkeleton } from '@/components/tables/credentials'
 import { CreateCredentialDialog } from '@/components/modal/Create/CreateCredentials'

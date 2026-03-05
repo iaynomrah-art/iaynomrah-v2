@@ -2,18 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-
-export type UserAccount = {
-  id: string;
-  created_at?: string;
-  first_name: string | null;
-  last_name: string | null;
-  middle_name: string | null;
-  contact_number_1: number | null;
-  contact_number_2: number | null;
-  email: string | null;
-  unit_id: string | null;
-};
+import { UserAccount } from "@/types";
 
 /* ── READ ── */
 
@@ -21,7 +10,7 @@ export async function getUserAccounts() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("user_account")
-    .select("*, units(*)")
+    .select("*, units(*, franchise(*))")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -60,7 +49,7 @@ export async function createUserAccount(
   if (error) {
     throw new Error(error.message);
   }
-  revalidatePath("/dashboard/trading-accounts/user-accounts");
+  revalidatePath("/dashboard/betting-accounts/accounts");
   return data;
 }
 
@@ -80,7 +69,7 @@ export async function updateUserAccount(
   if (error) {
     throw new Error(error.message);
   }
-  revalidatePath("/dashboard/trading-accounts/user-accounts");
+  revalidatePath("/dashboard/betting-accounts/accounts");
   return data;
 }
 
@@ -93,6 +82,6 @@ export async function deleteUserAccount(id: string) {
   if (error) {
     throw new Error(error.message);
   }
-  revalidatePath("/dashboard/trading-accounts/user-accounts");
+  revalidatePath("/dashboard/betting-accounts/accounts");
   return true;
 }

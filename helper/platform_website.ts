@@ -2,17 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-
-export type PlatformWebsite = {
-  id: number;
-  created_at?: string;
-  platform_name: string | null;
-  platform_website: string | null;
-  min_bet: number | null;
-  platform_code: string | null;
-  text_color: string | null;
-  bg_color: string | null;
-};
+import { PlatformWebsite } from "@/types";
 
 /* ── READ ── */
 
@@ -59,7 +49,7 @@ export async function createPlatformWebsite(
   if (error) {
     throw new Error(error.message);
   }
-  revalidatePath("/dashboard/trading-accounts/betting-platforms");
+  revalidatePath("/dashboard/betting-accounts/platforms");
   return data;
 }
 
@@ -79,7 +69,7 @@ export async function updatePlatformWebsite(
   if (error) {
     throw new Error(error.message);
   }
-  revalidatePath("/dashboard/trading-accounts/betting-platforms");
+  revalidatePath("/dashboard/betting-accounts/platforms");
   return data;
 }
 
@@ -95,6 +85,6 @@ export async function deletePlatformWebsite(id: number) {
   if (error) {
     throw new Error(error.message);
   }
-  revalidatePath("/dashboard/trading-accounts/betting-platforms");
+  revalidatePath("/dashboard/betting-accounts/platforms");
   return true;
 }

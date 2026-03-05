@@ -14,7 +14,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { getFranchises } from '@/helper/franchise'
 import { Franchise } from '@/types/franchise'
-import { getBaccaratData, updateBaccaratRow } from '@/helper/baccarat'
+import { getBaccaratData, updateBaccaratRow } from '@/helper/bot'
 import {
     DropdownMenu,
     DropdownMenuContent,

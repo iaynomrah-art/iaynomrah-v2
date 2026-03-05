@@ -2,15 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-
-export type Credential = {
-  id: string;
-  created_at?: string;
-  platform: string | null;
-  username: string | null;
-  password: string | null;
-  user_id: string | null;
-};
+import { Credential } from "@/types";
 
 /* ── READ ── */
 
@@ -18,7 +10,7 @@ export async function getCredentials() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("credential")
-    .select("*, user_account(*)")
+    .select("*, user_account(*), platform_website(*)")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -32,7 +24,7 @@ export async function getCredentialById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("credential")
-    .select("*, user_account(*)")
+    .select("*, user_account(*), platform_website(*)")
     .eq("id", id)
     .single();
 
@@ -57,7 +49,7 @@ export async function createCredential(
   if (error) {
     throw new Error(error.message);
   }
-  revalidatePath("/dashboard/trading-accounts/credentials");
+  revalidatePath("/dashboard/betting-accounts/credentials");
   return data;
 }
 
@@ -77,7 +69,7 @@ export async function updateCredential(
   if (error) {
     throw new Error(error.message);
   }
-  revalidatePath("/dashboard/trading-accounts/credentials");
+  revalidatePath("/dashboard/betting-accounts/credentials");
   return data;
 }
 
@@ -90,6 +82,6 @@ export async function deleteCredential(id: string) {
   if (error) {
     throw new Error(error.message);
   }
-  revalidatePath("/dashboard/trading-accounts/credentials");
+  revalidatePath("/dashboard/betting-accounts/credentials");
   return true;
 }

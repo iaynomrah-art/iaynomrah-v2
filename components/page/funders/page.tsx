@@ -1,18 +1,18 @@
 "use client"
 
-import React, { Suspense, useState, useEffect } from 'react'
-import { getPlatformWebsites, PlatformWebsiteRecord } from '@/helper/platform_websites'
+import React, { useState, useEffect } from 'react'
+import { getPlatformWebsites, PlatformWebsite } from '@/helper/platform_website'
 import { SearchBarHeader } from '@/components/ui/search-bar-header'
 import { BettingPlatformTable } from '@/components/tables/betting_platforms'
 import { FundersTableSkeleton } from '@/components/skeleton/PlatformSkeleton'
 import { FunderModal } from '@/components/modal/FunderModal'
 
 const FundersPage = () => {
-    const [funders, setFunders] = useState<any[]>([])
+    const [funders, setFunders] = useState<PlatformWebsite[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState("")
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [selectedFunder, setSelectedFunder] = useState<any | null>(null)
+    const [selectedFunder, setSelectedFunder] = useState<PlatformWebsite | null>(null)
 
     const fetchPlatforms = async (silent = false) => {
         if (!silent) setIsLoading(true)
@@ -35,7 +35,7 @@ const FundersPage = () => {
         setIsModalOpen(true)
     }
 
-    const handleEditClick = (funder: any) => {
+    const handleEditClick = (funder: PlatformWebsite) => {
         setSelectedFunder(funder)
         setIsModalOpen(true)
     }
@@ -50,7 +50,7 @@ const FundersPage = () => {
         setSelectedFunder(null)
         fetchPlatforms(true) // Refresh silently
     }
-    const filteredPlatforms = (funders as PlatformWebsiteRecord[]).filter(platform => {
+    const filteredPlatforms = (funders as PlatformWebsite[]).filter(platform => {
         const query = searchQuery.toLowerCase()
         return (
             (platform.platform_name?.toLowerCase() || "").includes(query) ||
