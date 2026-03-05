@@ -19,7 +19,7 @@ export async function getUnits() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("units")
-    .select("*, franchise(*)")
+    .select("*, franchise(*), user_account(*, bot(*))")
     .order("created_at", { ascending: false });
 
   if (error) {
