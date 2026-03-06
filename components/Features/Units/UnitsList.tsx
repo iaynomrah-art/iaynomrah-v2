@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Search, Trash2, Server } from "lucide-react";
+import { PlusCircle, Search, Trash2, Server, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ import { Unit, Franchise } from "@/types";
 import { deleteUnit } from "@/helper/units";
 import { UnitsCard } from "./UnitsCard";
 import { UnitsModal } from "./UnitsModal";
+import { FranchiseModal } from "./FranchiseModal";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +35,7 @@ const UnitsList = ({ initialUnits }: UnitsListProps) => {
   const [selectedUnit, setSelectedUnit] = useState<UnitWithFranchise | null>(null);
   const [unitToDelete, setUnitToDelete] = useState<{ id: string; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isFranchiseModalOpen, setIsFranchiseModalOpen] = useState(false);
 
   useEffect(() => {
     setUnits(initialUnits);
@@ -83,13 +85,23 @@ const UnitsList = ({ initialUnits }: UnitsListProps) => {
             className="pl-10 bg-[#0A0A0A] border-gray-800 focus:border-blue-600 transition-all h-10 w-full"
           />
         </div>
-        <Button
-          onClick={handleCreate}
-          className="bg-blue-600 hover:bg-blue-500 text-white gap-2 shadow-lg shadow-blue-900/20 px-6 h-10 active:scale-95 transition-all w-full sm:w-auto"
-        >
-          <PlusCircle className="w-4 h-4" />
-          Add Unit
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button
+            onClick={() => setIsFranchiseModalOpen(true)}
+            variant="outline"
+            className="bg-gray-900 border-gray-800 hover:bg-gray-800 hover:text-white text-gray-300 gap-2 px-6 h-10 active:scale-95 transition-all w-full sm:w-auto"
+          >
+            <Building2 className="w-4 h-4" />
+            Franchises
+          </Button>
+          <Button
+            onClick={handleCreate}
+            className="bg-blue-600 hover:bg-blue-500 text-white gap-2 shadow-lg shadow-blue-900/20 px-6 h-10 active:scale-95 transition-all w-full sm:w-auto"
+          >
+            <PlusCircle className="w-4 h-4" />
+            Add Unit
+          </Button>
+        </div>
       </div>
 
       {/* Grid: 1 column on mobile, 2 on medium, 4 on large screens */}
@@ -127,6 +139,11 @@ const UnitsList = ({ initialUnits }: UnitsListProps) => {
           }
           router.refresh();
         }}
+      />
+
+      <FranchiseModal
+        isOpen={isFranchiseModalOpen}
+        onClose={() => setIsFranchiseModalOpen(false)}
       />
 
       {/* Delete Confirmation Dialog */}

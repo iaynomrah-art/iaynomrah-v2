@@ -2,10 +2,11 @@ import React from "react";
 import UnitsList from "@/components/Features/Units/UnitsList";
 import { getUnits } from "@/helper/units";
 
+
 export default async function UnitsPage() {
   const units = await getUnits();
 
-  console.log(units);
+
 
   return (
     <div className="p-6 space-y-6 w-full">

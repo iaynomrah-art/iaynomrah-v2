@@ -21,9 +21,9 @@ def get_machine_guid() -> str:
         return ""
 
 
-def register_bot(guid: str):
-    """Upsert a row in bot_monitoring using guid as the unique key.
-    Only sets guid and status='Idle' — pc_name is assigned by DB trigger.
+def register_unit(guid: str):
+    """Upsert a row in units using guid as the unique key.
+    Sets guid, status='connected', and franchise_id.
     """
     load_dotenv(ENV_FILE)
 
@@ -32,7 +32,7 @@ def register_bot(guid: str):
     franchise_id = os.getenv("UNIT_DEFAULT_ID")
 
     if not supabase_url or not service_role_key:
-        print("Supabase credentials not set — skipping bot registration.")
+        print("Supabase credentials not set — skipping unit registration.")
         return
 
     headers = {
@@ -43,47 +43,47 @@ def register_bot(guid: str):
     }
 
     try:
-        # Check if a bot with this guid already exists
+        # Check if a unit with this guid already exists
         get_response = requests.get(
-            f"{supabase_url}/rest/v1/bot_monitoring",
+            f"{supabase_url}/rest/v1/units",
             params={"guid": f"eq.{guid}", "select": "*"},
             headers=headers,
         )
         get_response.raise_for_status()
-        existing_bots = get_response.json()
+        existing_units = get_response.json()
 
-        if existing_bots:
-            # Bot exists, just update its status
-            bot_id = existing_bots[0]['id']
+        if existing_units:
+            # Unit exists, just update its status
+            unit_id = existing_units[0]['id']
             patch_response = requests.patch(
-                f"{supabase_url}/rest/v1/bot_monitoring",
-                params={"id": f"eq.{bot_id}"},
-                json={"status": "Idle"},
+                f"{supabase_url}/rest/v1/units",
+                params={"id": f"eq.{unit_id}"},
+                json={"status": "connected"},
                 headers=headers,
             )
             if patch_response.status_code in (200, 204):
-                print(f"Bot updated in Supabase (guid={guid}).")
+                print(f"Unit updated in Supabase (guid={guid}).")
             else:
                 print(f"Supabase update failed [{patch_response.status_code}]: {patch_response.text}")
         else:
-            # Bot does not exist, insert it
+            # Unit does not exist, insert it
             payload = {
                 "guid": guid,
-                "status": "Idle",
+                "status": "connected",
                 "franchise_id": franchise_id,
             }
             post_response = requests.post(
-                f"{supabase_url}/rest/v1/bot_monitoring",
+                f"{supabase_url}/rest/v1/units",
                 json=payload,
                 headers=headers,
             )
             if post_response.status_code in (200, 201):
-                print(f"Bot registered in Supabase (guid={guid}).")
+                print(f"Unit registered in Supabase (guid={guid}).")
             else:
                 print(f"Supabase insert failed [{post_response.status_code}]: {post_response.text}")
 
     except Exception as e:
-        print(f"Error registering bot in Supabase: {e}")
+        print(f"Error registering unit in Supabase: {e}")
 
 
 def initialize_environment():
@@ -94,4 +94,4 @@ def initialize_environment():
     if guid:
         print(f"Found Machine GUID: {guid}")
         set_key(ENV_FILE, "GUID", guid)
-        register_bot(guid)
+        register_unit(guid)
