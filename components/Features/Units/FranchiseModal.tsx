@@ -21,6 +21,7 @@ export const FranchiseModal = ({ isOpen, onClose }: FranchiseModalProps) => {
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedFranchise, setSelectedFranchise] = useState<Franchise | null>(null);
+  const [franchiseToDelete, setFranchiseToDelete] = useState<string | null>(null);
 
   const fetchFranchises = async () => {
     setIsLoading(true);
@@ -51,15 +52,21 @@ export const FranchiseModal = ({ isOpen, onClose }: FranchiseModalProps) => {
     setIsFormModalOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this franchise?")) return;
+  const handleDelete = (id: string) => {
+    setFranchiseToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!franchiseToDelete) return;
     try {
-      await deleteFranchise(id);
+      await deleteFranchise(franchiseToDelete);
       toast.success("Franchise deleted successfully");
       fetchFranchises();
     } catch (e) {
        console.error(e);
        toast.error("Failed to delete franchise");
+    } finally {
+      setFranchiseToDelete(null);
     }
   };
 
@@ -155,6 +162,25 @@ export const FranchiseModal = ({ isOpen, onClose }: FranchiseModalProps) => {
         franchise={selectedFranchise}
         onSuccess={() => fetchFranchises()}
       />
+
+      <Dialog open={!!franchiseToDelete} onOpenChange={(open) => !open && setFranchiseToDelete(null)}>
+        <DialogContent className="bg-[#050505] border-gray-800 text-white max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-gray-400">
+            Are you sure you want to delete this franchise? This action cannot be undone.
+          </div>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="ghost" className="text-gray-400 hover:text-white" onClick={() => setFranchiseToDelete(null)}>
+              Cancel
+            </Button>
+            <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
