@@ -11,4 +11,5 @@ export interface Bot {
   command: boolean | null;
   duration: number | null;
   strategy: string | null;
+  bot_status: 'run' | 'stop' | null;
 }

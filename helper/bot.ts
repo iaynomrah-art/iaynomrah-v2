@@ -16,7 +16,20 @@ export type Bot = {
   command: boolean | null;
   duration: number | null;
   strategy: string | null;
+  credential_id: string | null;
+  bot_status: 'run' | 'stop' | null;
 };
+
+export type CredentialRecord = {
+  id: string;
+  username: string;
+  platform_website?: {
+    id: number;
+    platform_name: string | null;
+    platform_code: string | null;
+  } | null;
+};
+
 
 export type BaccaratRecord = {
   id: number | string;
@@ -25,18 +38,31 @@ export type BaccaratRecord = {
   target_profit: number | null;
   actions: string | null;
   units?: string | null;
+  unit_name?: string | null;
   status?: string | null;
+  bot_status?: 'run' | 'stop' | null;
   user_balance?: number | string | null;
   bet_size?: number | string | null;
   strategy?: string | null;
   duration?: number | string | null;
   franchise_code?: string | null;
   platform_code?: string | null;
+  credential_id?: string | null;
+  available_credentials?: CredentialRecord[];
   assigned_user?: {
+    id: string;
     first_name: string | null;
     middle_name: string | null;
     last_name: string | null;
+    units?: unknown;
+    credential?: CredentialRecord[];
   } | null;
+};
+
+export type PlatformWebsiteRecord = {
+  id: number;
+  platform_name: string | null;
+  platform_code: string | null;
 };
 
 /* ── READ ── */
@@ -53,6 +79,20 @@ export async function getBots() {
     return [];
   }
   return data;
+}
+
+export async function getPlatforms() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("platform_website")
+    .select("id, platform_name, platform_code")
+    .order("platform_name", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching platforms:", error);
+    return [];
+  }
+  return data as PlatformWebsiteRecord[];
 }
 
 export async function getBotById(id: string) {
@@ -77,29 +117,80 @@ export async function getBotById(id: string) {
 export async function getBaccaratData(): Promise<BaccaratRecord[]> {
   const supabase = await createClient();
 
+  // Fetch bots with their relationships
   const { data, error } = await supabase
     .from("bot")
     .select(
-      "id, user_id, status, balance, level, pattern, target_profit, bet, strategy, duration, command, user_account(first_name, middle_name, last_name)",
+      `
+      id, user_id, status, bot_status, balance, level, pattern, target_profit, bet, strategy, duration, command, credential_id, 
+      user_account(
+        id, first_name, middle_name, last_name, units(unit_name), 
+        credential(*, platform_website(*))
+      ), 
+      credential(id, platform_website(id, platform_name, platform_code))
+      `
     )
     .order("id", { ascending: true });
+
+  // Fetch ALL credentials to populate the platform dropdown
+  const { data: allCredentials, error: credError } = await supabase
+    .from("credential")
+    .select("id, username, platform_website(id, platform_name, platform_code)");
 
   if (error) {
     console.error("Error fetching baccarat / bot data:", error);
     return [];
   }
+  if (credError) {
+    console.error("Error fetching all credentials:", credError);
+  }
 
-  const rows = (data || []) as any[];
+  // Map all credentials to CredentialRecord format
+  const allCreds: CredentialRecord[] = (allCredentials || []).map((c) => {
+    const pw = Array.isArray(c.platform_website) ? c.platform_website[0] : (c.platform_website ?? null);
+    return {
+      id: c.id,
+      username: c.username ?? '',
+      platform_website: pw ? {
+        id: pw.id,
+        platform_name: pw.platform_name ?? null,
+        platform_code: pw.platform_code ?? null,
+      } : null,
+    };
+  });
+
+  const rows = (data || []);
 
   const mapped: BaccaratRecord[] = rows.map((row) => {
     const assignedUser = Array.isArray(row.user_account)
       ? row.user_account[0]
       : (row.user_account ?? null);
+    
+    // Safely extract unit_name depending on if user_account or units is an array
+    let unitName = row.id;
+    if (assignedUser?.units) {
+        const accUnits = Array.isArray(assignedUser.units) ? assignedUser.units[0] : assignedUser.units;
+        if (accUnits?.unit_name) {
+            unitName = accUnits.unit_name;
+        }
+    }
+
+    const currentCredential = Array.isArray(row.credential)
+      ? row.credential[0]
+      : (row.credential ?? null);
+    
+    let platformWebsite: unknown = currentCredential?.platform_website;
+    if (Array.isArray(platformWebsite)) {
+        platformWebsite = (platformWebsite as unknown[])[0];
+    }
+    const pw = platformWebsite as { platform_name: string; platform_code: string } | null;
 
     return {
       id: row.id,
-      units: row.id,
+      units: unitName,
+      unit_name: unitName,
       status: row.status ?? null,
+      bot_status: row.bot_status ?? 'stop',
       bet_size: row.bet ?? null,
       user_balance: row.balance ?? null,
       level: row.level ?? null,
@@ -108,7 +199,9 @@ export async function getBaccaratData(): Promise<BaccaratRecord[]> {
       strategy: row.strategy ?? null,
       duration: row.duration ?? null,
       franchise_code: null,
-      platform_code: null,
+      platform_code: pw?.platform_code || pw?.platform_name || null,
+      credential_id: row.credential_id ?? null,
+      available_credentials: allCreds,
       assigned_user: assignedUser,
       actions: null,
     };
@@ -133,10 +226,10 @@ export async function createBot(formData: Omit<Bot, "id" | "created_at">) {
   return data;
 }
 
-export async function createBaccaratRow(payload: any): Promise<any[]> {
+export async function createBaccaratRow(payload: Partial<BaccaratRecord & { user_id: string }>): Promise<unknown[]> {
   const supabase = await createClient();
 
-  const insertData: any = {
+  const insertData: Record<string, unknown> = {
     status: payload.status
       ? payload.status.charAt(0).toUpperCase() +
         payload.status.slice(1).toLowerCase()
@@ -144,9 +237,9 @@ export async function createBaccaratRow(payload: any): Promise<any[]> {
     level: payload.level,
     pattern: payload.pattern,
     target_profit: payload.target_profit,
-    bet: payload.bet_size,
+    bet: typeof payload.bet_size === 'string' ? parseFloat(payload.bet_size) : payload.bet_size,
     strategy: payload.strategy,
-    duration: payload.duration,
+    duration: typeof payload.duration === 'string' ? parseInt(payload.duration) : payload.duration,
     user_id: payload.user_id,
   };
 
@@ -196,7 +289,7 @@ type UpdateBaccaratPayload = {
   duration?: number | null;
   user_id?: string | null;
   platform_code?: string | null;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 export async function updateBaccaratRow({
@@ -213,7 +306,7 @@ export async function updateBaccaratRow({
 }: UpdateBaccaratPayload): Promise<void> {
   const supabase = await createClient();
 
-  const updateData: any = {
+  const updateData: Record<string, unknown> = {
     level,
     pattern,
     target_profit,
@@ -257,10 +350,6 @@ export async function deleteBot(id: string) {
 
 /* ── UTILITIES ── */
 
-export async function getFranchiseUnitCount(
-  franchiseId: number,
-): Promise<number> {
-  // Since the bot table no longer has franchise_id,
-  // this returns 0. Adjust if franchise tracking is re-added.
+export async function getFranchiseUnitCount(): Promise<number> {
   return 0;
 }

@@ -10,7 +10,7 @@ export async function getUserAccounts() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("user_account")
-    .select("*, units(*, franchise(*))")
+    .select("*, units(*, franchise(*)), credential(*, platform_website(*))")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -24,7 +24,7 @@ export async function getUserAccountById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("user_account")
-    .select("*, units(*)")
+    .select("*, units(*), credential(*, platform_website(*))")
     .eq("id", id)
     .single();
 

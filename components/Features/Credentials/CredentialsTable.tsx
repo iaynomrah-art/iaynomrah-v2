@@ -73,11 +73,14 @@ const CredentialsTable = ({ initialCredentials }: CredentialsTableProps) => {
     setIsModalOpen(true);
   };
 
-  const filteredCredentials = credentials.filter(c => 
-    `${c.user_account?.first_name} ${c.user_account?.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.platform_website?.platform_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredCredentials = credentials.filter(c => {
+    const query = searchQuery.toLowerCase();
+    const fullName = `${c.user_account?.first_name || ""} ${c.user_account?.last_name || ""}`.toLowerCase();
+    const username = (c.username || "").toLowerCase();
+    const platformName = (c.platform_website?.platform_name || "").toLowerCase();
+    
+    return fullName.includes(query) || username.includes(query) || platformName.includes(query);
+  });
 
   return (
     <div className="space-y-4">
