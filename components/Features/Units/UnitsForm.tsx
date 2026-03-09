@@ -11,6 +11,7 @@ import { Save, Loader2, Pencil, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import { createUnit, updateUnit } from "@/helper/units";
 import { getFranchises } from "@/helper/franchise";
+import { getFranchiseUnitCount } from "@/helper/bot";
 import { Unit, Franchise } from "@/types";
 
 const unitSchema = z.object({
@@ -38,6 +39,8 @@ export const UnitsForm = ({ unit, onSuccess, onCancel }: UnitsFormProps) => {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<z.input<typeof unitSchema>>({
     resolver: zodResolver(unitSchema),
@@ -57,6 +60,23 @@ export const UnitsForm = ({ unit, onSuccess, onCancel }: UnitsFormProps) => {
     };
     fetchFranchises();
   }, []);
+
+  const selectedFranchiseId = watch("franchise_id");
+
+  useEffect(() => {
+    const autoFillName = async () => {
+      // Only auto-fill for new units (isEdit is false)
+      if (selectedFranchiseId && !isEdit) {
+        const franchise = franchises.find(f => f.id === selectedFranchiseId);
+        if (franchise) {
+          const count = await getFranchiseUnitCount(selectedFranchiseId);
+          const prefix = franchise.code || franchise.name || "UNIT";
+          setValue("unit_name", `${prefix}-${(count + 1).toString().padStart(2, '0')}`);
+        }
+      }
+    };
+    autoFillName();
+  }, [selectedFranchiseId, franchises, setValue, isEdit]);
 
   useEffect(() => {
     reset({

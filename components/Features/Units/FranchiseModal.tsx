@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, PlusCircle, Pencil, Trash2, Loader2, Building2 } from "lucide-react";
-import { Franchise, getFranchises, deleteFranchise } from "@/helper/franchise";
+import {getFranchises, deleteFranchise } from "@/helper/franchise";
+import { Franchise } from "@/types";
 import { FranchiseFormModal } from "./FranchiseFormModal";
 import { toast } from "sonner";
 

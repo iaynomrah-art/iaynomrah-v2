@@ -16,17 +16,7 @@ export interface DashboardData {
   totalFranchises: number;
   units: Units[];
 }
-
-interface RawUnitData {
-  id: string;
-  unit_name: string | null;
-  status: string | null;
-  user_account: {
-    bot: {
-      balance: number | null;
-    }[];
-  }[];
-}
+import { Bot } from "@/types";
 
 export const getDashboardData = async (): Promise<DashboardData> => {
   const supabase = await createClient();
@@ -35,30 +25,28 @@ export const getDashboardData = async (): Promise<DashboardData> => {
     { count: totalUnits },
     { count: runningUnits },
     { count: totalFranchises },
-    { data: unitsData }
+    { data: botData }
   ] = await Promise.all([
-    supabase.from("units").select("*", { count: "exact", head: true }),
-    supabase.from("units").select("*", { count: "exact", head: true }).eq("status", "connected"),
+    supabase.from("bot").select("*", { count: "exact", head: true }),
+    supabase.from("bot").select("*", { count: "exact", head: true }).eq("status", "connected"),
     supabase.from("franchise").select("*", { count: "exact", head: true }),
-    supabase.from("units").select(`
+    supabase.from("bot").select(`
       id,
       unit_name,
       status,
-      user_account (
-        bot (
-          balance
-        )
-      )
+      balance
     `).order("id", { ascending: true })
   ]);
 
-  const mappedUnits: Units[] = ((unitsData as unknown as RawUnitData[]) || []).map((unit) => ({
-    id: unit.id,
-    units: unit.unit_name,
-    pc_name: null,
-    status: unit.status === 'connected' ? 'Running' : 'Offline',
-    user_balance: unit.user_account?.[0]?.bot?.[0]?.balance ?? 0
+  const mappedUnits: Units[] = ((botData as Bot[]) || []).map((bot) => ({
+    id: bot.id,
+    units: bot.unit_name,
+    pc_name: bot.unit_name,
+    status: bot.status === 'connected' ? 'Running' : (bot.status || 'Offline'),
+    user_balance: bot.balance ?? 0
   }));
+
+
 
 
   return {

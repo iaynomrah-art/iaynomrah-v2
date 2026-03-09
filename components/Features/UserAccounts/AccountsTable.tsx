@@ -78,8 +78,7 @@ const AccountsTable = ({ initialAccounts }: AccountsTableProps) => {
 
   const filteredAccounts = accounts.filter(acc => 
     `${acc.first_name || ""} ${acc.last_name || ""}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    acc.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    acc.units?.unit_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    acc.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -119,16 +118,13 @@ const AccountsTable = ({ initialAccounts }: AccountsTableProps) => {
               <TableHead className="text-gray-400 font-bold uppercase text-[10px] tracking-wider text-center px-6 py-4">
                 Contact Details
               </TableHead>
-              <TableHead className="text-gray-400 font-bold uppercase text-[10px] tracking-wider px-6 py-4">
-                Owned PC
-              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredAccounts.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={4}
                   className="h-32 text-center text-gray-500 italic border-gray-800"
                 >
                   {searchQuery ? `No results found for "${searchQuery}"` : "No accounts found."}
@@ -179,26 +175,6 @@ const AccountsTable = ({ initialAccounts }: AccountsTableProps) => {
                       <span className="text-gray-300 text-xs font-mono">{account.contact_number_1}</span>
                       {account.contact_number_2 && (
                         <span className="text-gray-500 text-[10px] font-mono">{account.contact_number_2}</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
-                    <div className="flex flex-col gap-1">
-                      {account.units?.unit_name ? (
-                        <>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-400/10 text-blue-400 border border-blue-400/20 shadow-sm w-fit">
-                            {account.units.unit_name}
-                          </span>
-                          {account.units.franchise?.name && (
-                            <span className="text-[9px] text-gray-500 ml-1">
-                              {account.units.franchise.name}
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        <span className="text-gray-600 italic text-[11px]">
-                          Unassigned
-                        </span>
                       )}
                     </div>
                   </TableCell>

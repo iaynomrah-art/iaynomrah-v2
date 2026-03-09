@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { BaccaratRecord, updateBot } from '@/helper/bot';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { 
   Table, 
   TableBody, 
@@ -33,8 +35,55 @@ type SortConfig = {
 } | null;
 
 export const PlayBaccaratTable = ({ initialData }: PlayBaccaratTableProps) => {
+  const router = useRouter();
   const [data, setData] = useState<BaccaratRecord[]>(initialData);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    
+    const channel = supabase
+      .channel('baccarat-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bot' },
+        (payload) => {
+          if (payload.eventType === 'UPDATE') {
+            setData((current) =>
+              current.map((bot) =>
+                bot.id.toString() === payload.new.id.toString()
+                  ? {
+                      ...bot,
+                      status: payload.new.status,
+                      bot_status: payload.new.bot_status,
+                      user_balance: payload.new.balance,
+                      bet_size: payload.new.bet,
+                      level: payload.new.level,
+                      pattern: payload.new.pattern,
+                      target_profit: payload.new.target_profit,
+                      strategy: payload.new.strategy,
+                      duration: payload.new.duration,
+                      credential_id: payload.new.credential_id,
+                      unit_name: payload.new.unit_name,
+                    }
+                  : bot
+              )
+            );
+          } else if (payload.eventType === 'INSERT' || payload.eventType === 'DELETE') {
+             router.refresh();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router]);
+
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isMultiLoading, setIsMultiLoading] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);

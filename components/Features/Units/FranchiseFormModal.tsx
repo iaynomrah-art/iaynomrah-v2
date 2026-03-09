@@ -3,7 +3,7 @@
 import React from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { FranchiseForm } from "./FranchiseForm";
-import { Franchise } from "@/helper/franchise";
+import { Franchise } from "@/types";
 
 interface FranchiseFormModalProps {
   isOpen: boolean;

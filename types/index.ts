@@ -14,8 +14,8 @@ export interface Database {
       franchise: import('./franchise').Franchise;
       platform_website: import('./platform_website').PlatformWebsite;
       play_history: import('./play_history').PlayHistory;
-      units: import('./unit').Unit;
       user_account: import('./user_account').UserAccount;
     };
   };
 }
+

@@ -7,5 +7,5 @@ export interface UserAccount {
   contact_number_1: number | null;
   contact_number_2: number | null;
   email: string | null;
-  unit_id: string | null;
 }
+

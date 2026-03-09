@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Save, Loader2, Pencil, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import { createFranchise, updateFranchise } from "@/helper/franchise";
-import { Franchise } from "@/helper/franchise";
+import { Franchise } from "@/types";
 
 const franchiseSchema = z.object({
   name: z.string().min(1, "Name is required"),

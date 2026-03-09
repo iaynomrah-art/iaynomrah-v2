@@ -2,23 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-
-export type Bot = {
-  id: string;
-  created_at?: string;
-  user_id: string | null;
-  balance: number | null;
-  status: string | null;
-  bet: number | null;
-  pattern: string | null;
-  level: number | null;
-  target_profit: number | null;
-  command: boolean | null;
-  duration: number | null;
-  strategy: string | null;
-  credential_id: string | null;
-  bot_status: 'run' | 'stop' | null;
-};
+import { Bot } from "@/types";
 
 export type CredentialRecord = {
   id: string;
@@ -57,6 +41,8 @@ export type BaccaratRecord = {
     units?: unknown;
     credential?: CredentialRecord[];
   } | null;
+  franchise_id?: string | number | null;
+  pc_name?: string | null;
 };
 
 export type PlatformWebsiteRecord = {
@@ -122,9 +108,9 @@ export async function getBaccaratData(): Promise<BaccaratRecord[]> {
     .from("bot")
     .select(
       `
-      id, user_id, status, bot_status, balance, level, pattern, target_profit, bet, strategy, duration, command, credential_id, 
+      id, user_id, status, bot_status, balance, level, pattern, target_profit, bet, strategy, duration, command, credential_id, unit_name,
       user_account(
-        id, first_name, middle_name, last_name, units(unit_name), 
+        id, first_name, middle_name, last_name, 
         credential(*, platform_website(*))
       ), 
       credential(id, platform_website(id, platform_name, platform_code))
@@ -166,18 +152,13 @@ export async function getBaccaratData(): Promise<BaccaratRecord[]> {
       ? row.user_account[0]
       : (row.user_account ?? null);
     
-    // Safely extract unit_name depending on if user_account or units is an array
-    let unitName = row.id;
-    if (assignedUser?.units) {
-        const accUnits = Array.isArray(assignedUser.units) ? assignedUser.units[0] : assignedUser.units;
-        if (accUnits?.unit_name) {
-            unitName = accUnits.unit_name;
-        }
-    }
+    // Units are now unified - name is directly on the bot row
+    const unitName = row.unit_name || row.id;
 
     const currentCredential = Array.isArray(row.credential)
       ? row.credential[0]
       : (row.credential ?? null);
+
     
     let platformWebsite: unknown = currentCredential?.platform_website;
     if (Array.isArray(platformWebsite)) {
@@ -241,7 +222,24 @@ export async function createBaccaratRow(payload: Partial<BaccaratRecord & { user
     strategy: payload.strategy,
     duration: typeof payload.duration === 'string' ? parseInt(payload.duration) : payload.duration,
     user_id: payload.user_id,
+    unit_name: payload.unit_name || payload.pc_name,
+    franchise_id: payload.franchise_id,
   };
+
+  // Auto-name logic if franchise is present but name is not
+  if (payload.franchise_id && !insertData.unit_name) {
+    const { data: franchise } = await supabase
+      .from('franchise')
+      .select('code, name')
+      .eq('id', payload.franchise_id)
+      .single();
+      
+    if (franchise) {
+      const count = await getFranchiseUnitCount(payload.franchise_id as string);
+      const prefix = franchise.code || franchise.name || "UNIT";
+      insertData.unit_name = `${prefix}-${(count + 1).toString().padStart(2, '0')}`;
+    }
+  }
 
   const { data, error } = await supabase
     .from("bot")
@@ -289,6 +287,9 @@ type UpdateBaccaratPayload = {
   duration?: number | null;
   user_id?: string | null;
   platform_code?: string | null;
+  franchise_id?: string | number | null;
+  pc_name?: string | null;
+  unit_name?: string | null;
   [key: string]: unknown;
 };
 
@@ -303,6 +304,7 @@ export async function updateBaccaratRow({
   command,
   duration,
   user_id,
+  ...payload
 }: UpdateBaccaratPayload): Promise<void> {
   const supabase = await createClient();
 
@@ -324,6 +326,9 @@ export async function updateBaccaratRow({
   if (strategy !== undefined) updateData.strategy = strategy;
   if (duration !== undefined) updateData.duration = duration;
   if (user_id !== undefined) updateData.user_id = user_id;
+  if (payload.unit_name !== undefined) updateData.unit_name = payload.unit_name;
+  if (payload.pc_name !== undefined) updateData.unit_name = payload.pc_name;
+  if (payload.franchise_id !== undefined) updateData.franchise_id = payload.franchise_id;
 
   const { error } = await supabase.from("bot").update(updateData).eq("id", id);
 
@@ -350,6 +355,17 @@ export async function deleteBot(id: string) {
 
 /* ── UTILITIES ── */
 
-export async function getFranchiseUnitCount(): Promise<number> {
-  return 0;
+export async function getFranchiseUnitCount(franchiseId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("bot")
+    .select("*", { count: "exact", head: true })
+    .eq("franchise_id", franchiseId);
+
+  if (error) {
+    console.error("Error fetching franchise unit count:", error);
+    return 0;
+  }
+  return count || 0;
 }
+

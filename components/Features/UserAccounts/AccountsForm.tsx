@@ -1,24 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Save, Loader2, UserPlus, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { createUserAccount, updateUserAccount } from "@/helper/user_account";
-import { getUnits } from "@/helper/units";
-import { UserAccount, Unit, Franchise } from "@/types";
+import { UserAccount } from "@/types";
 
 const accountSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
@@ -26,15 +18,10 @@ const accountSchema = z.object({
   email: z.string().email("Invalid email").or(z.literal("")).optional(),
   contact_number_1: z.string().min(1, "Contact number 1 is required"),
   contact_number_2: z.string().optional(),
-  unit_id: z.string().nullable().optional(),
 });
 
 type AccountFormValues = z.infer<typeof accountSchema>;
 
-// Define a type for the joined unit data we might receive
-interface UnitWithFranchise extends Unit {
-  franchise?: Franchise | null;
-}
 
 interface AccountsFormProps {
   account?: UserAccount | null;
@@ -44,14 +31,11 @@ interface AccountsFormProps {
 
 export const AccountsForm = ({ account, onSuccess, onCancel }: AccountsFormProps) => {
   const [isPending, setIsPending] = useState(false);
-  const [units, setUnits] = useState<UnitWithFranchise[]>([]);
   const isEdit = !!account;
 
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors },
   } = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
@@ -61,23 +45,9 @@ export const AccountsForm = ({ account, onSuccess, onCancel }: AccountsFormProps
       email: account?.email || "",
       contact_number_1: account?.contact_number_1?.toString() || "",
       contact_number_2: account?.contact_number_2?.toString() || "",
-      unit_id: account?.unit_id || null,
     },
   });
 
-  const selectedUnitId = watch("unit_id");
-
-  useEffect(() => {
-    const fetchUnits = async () => {
-      try {
-        const data = await getUnits();
-        setUnits(data || []);
-      } catch (error) {
-        console.error("Failed to fetch units:", error);
-      }
-    };
-    fetchUnits();
-  }, []);
 
   const onSubmit = async (values: AccountFormValues) => {
     setIsPending(true);
@@ -184,25 +154,6 @@ export const AccountsForm = ({ account, onSuccess, onCancel }: AccountsFormProps
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Owned PC (Unit)</Label>
-        <Select
-          value={selectedUnitId || "none"}
-          onValueChange={(val) => setValue("unit_id", val === "none" ? null : val)}
-        >
-          <SelectTrigger className="bg-[#111111] border-gray-800">
-            <SelectValue placeholder="Select a PC" />
-          </SelectTrigger>
-          <SelectContent className="bg-[#0A0A0A] border-gray-800 text-white">
-            <SelectItem value="none" className="text-gray-500 italic">None / Unassigned</SelectItem>
-            {units.map((unit) => (
-              <SelectItem key={unit.id} value={unit.id}>
-                {unit.unit_name} {unit.franchise?.name ? `(${unit.franchise.name})` : ""}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-900">
         <Button

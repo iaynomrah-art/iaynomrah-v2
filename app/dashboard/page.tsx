@@ -46,7 +46,7 @@ async function UserCheck() {
           <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
           <div className="flex flex-col gap-3">
             <AddFranchiseQuickAction />
-            <Link href="/dashboard/trading-units/my-units" className="w-full">
+            <Link href="/dashboard/units" className="w-full">
               <Button
                 className="h-12 bg-[#0d0d0d] border border-[#1a1a1a] hover:bg-[#141414] hover:border-orange-500/50 text-white flex items-center justify-start px-4 gap-4 transition-all w-full group/btn"
                 variant="outline"
